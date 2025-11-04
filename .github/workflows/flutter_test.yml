@@ -9,31 +9,25 @@ on:
 
 jobs:
   test:
-    name: Test su ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        flutter-version: ['3.24.0']
+    name: Test Android
+    runs-on: ubuntu-latest
     
     steps:
       - name: Checkout del codice
         uses: actions/checkout@v4
 
       - name: Setup Java per Android
-        if: runner.os == 'Linux'
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Setup Flutter ${{ matrix.flutter-version }}
+      - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ matrix.flutter-version }}
+          flutter-version: '3.24.0'
           channel: 'stable'
           cache: true
-          cache-key: flutter-${{ matrix.os }}-${{ matrix.flutter-version }}
 
       - name: Visualizza versione Flutter
         run: flutter --version
@@ -54,7 +48,6 @@ jobs:
         run: flutter test --coverage
 
       - name: Upload coverage a Codecov
-        if: runner.os == 'Linux'
         uses: codecov/codecov-action@v4
         with:
           files: ./coverage/lcov.info
@@ -65,7 +58,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ matrix.os }}
+          name: test-results-android
           path: |
             coverage/
             test/
