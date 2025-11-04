@@ -99,15 +99,15 @@ class NutritionApiService {
 
   String getMotivationalMessage(int steps) {
     if (steps < 2000) {
-      return "Inizia a muoverti! Ogni passo conta! 🚶";
+      return "Inizia a muoverti. Ogni passo conta.";
     } else if (steps < 5000) {
-      return "Ottimo inizio! Continua così! 💪";
+      return "Ottimo inizio. Continua così.";
     } else if (steps < 8000) {
-      return "Stai andando benissimo! Quasi al goal! 🎯";
+      return "Stai andando benissimo. Quasi all'obiettivo.";
     } else if (steps < 10000) {
-      return "Fantastico! Sei vicino all'obiettivo! 🌟";
+      return "Fantastico. Sei vicino all'obiettivo.";
     } else {
-      return "Incredibile! Hai raggiunto il goal! 🏆";
+      return "Eccellente. Hai raggiunto l'obiettivo.";
     }
   }
 
@@ -118,14 +118,14 @@ class NutritionApiService {
     tips.add('Hai bruciato circa ${calories.toStringAsFixed(1)} kcal');
     
     if (steps >= 10000) {
-      tips.add('Ottima attività! Idratati bene 💧');
-      tips.add('Considera uno stretching post-camminata');
+      tips.add('Ottima attività svolta. Ricordati di idratarti adeguatamente');
+      tips.add('Considera di eseguire esercizi di stretching post-camminata');
     } else if (steps >= 5000) {
-      tips.add('Ancora qualche passo per raggiungere 10.000!');
-      tips.add('Prova a fare le scale invece dell\'ascensore');
+      tips.add('Ancora qualche passo per raggiungere i 10.000 passi giornalieri');
+      tips.add('Prova a utilizzare le scale invece dell\'ascensore');
     } else {
-      tips.add('Una camminata di 30 minuti può fare la differenza');
-      tips.add('Prova a fare una passeggiata dopo i pasti');
+      tips.add('Una camminata di 30 minuti può incrementare significativamente l\'attività');
+      tips.add('Considera una passeggiata dopo i pasti principali');
     }
     
     return tips;

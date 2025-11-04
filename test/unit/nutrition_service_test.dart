@@ -20,7 +20,7 @@ void main() {
       expect(service.getMotivationalMessage(1000), contains('Inizia'));
       expect(service.getMotivationalMessage(3000), contains('Ottimo'));
       expect(service.getMotivationalMessage(6000), contains('benissimo'));
-      expect(service.getMotivationalMessage(9000), contains('vicino'));
+      expect(service.getMotivationalMessage(9000), contains('obiettivo'));
       expect(service.getMotivationalMessage(10500), contains('raggiunto'));
     });
 
@@ -34,7 +34,7 @@ void main() {
 
       final tipsHigh = service.getHealthTips(12000);
       expect(tipsHigh.length, greaterThan(0));
-      expect(tipsHigh.any((tip) => tip.contains('Idratati')), true);
+      expect(tipsHigh.any((tip) => tip.contains('idrat')), true);
     });
 
     test('searchLocalFoodDatabase trova cibi italiani nel database', () {

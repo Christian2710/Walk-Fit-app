@@ -193,7 +193,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Allenamento Completato! 🎉'),
+        title: const Text('Allenamento Completato'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -419,8 +419,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                         ),
                         Text(
                           _currentPace < _targetPace 
-                            ? '⚡ Stai andando forte!' 
-                            : '🐢 Aumenta il passo!',
+                            ? 'Ritmo superiore al target' 
+                            : 'Aumenta il ritmo',
                           style: const TextStyle(fontSize: 12),
                         ),
                       ],
