@@ -29,12 +29,14 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   double _targetPace = 6.0;
   int _dynamicStepsGoal = 0;
   double _currentPace = 0;
+  double _caloriesToBurn = 0;
 
   @override
   void initState() {
     super.initState();
     _checkActiveSession();
     _initPedometer();
+    _loadCalorieTargets();
   }
 
   Future<void> _checkActiveSession() async {
@@ -51,6 +53,24 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     }
   }
 
+  Future<void> _loadCalorieTargets() async {
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final consumed = await _dbService.getTotalCaloriesConsumedByDate(today);
+    final stepRecord = await _dbService.getStepRecordByDate(today);
+    final burned = stepRecord?.calories ?? 0;
+
+    final caloriesToBurn = consumed - burned;
+    final stepsNeeded = caloriesToBurn > 0 ? (caloriesToBurn / 0.04).ceil() : 0;
+
+    if (!mounted) return;
+    setState(() {
+      _caloriesToBurn = caloriesToBurn > 0 ? caloriesToBurn : 0;
+      if (!_isRunning || stepsNeeded == 0) {
+        _dynamicStepsGoal = stepsNeeded;
+      }
+    });
+  }
+
   void _initPedometer() {
     _pedometerService.stepCountStream.listen((steps) {
       if (_isRunning) {
@@ -62,6 +82,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           _distance = _steps * 0.0008;
         });
         _updateActiveSession();
+        _loadCalorieTargets();
       }
     });
   }
@@ -79,38 +100,52 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   }
 
   void _adjustDynamicGoal() async {
-    if (!_isRunning || _distance == 0) return;
-
-    if (_elapsedTime > 0) {
-      final hours = _elapsedTime / (1000 * 60 * 60);
-      _currentPace = _distance > 0 ? (60 / (_distance / hours)) : 0;
-
-      final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-      final consumed = await _dbService.getTotalCaloriesConsumedByDate(today);
-      final stepRecord = await _dbService.getStepRecordByDate(today);
-      final burned = stepRecord?.calories ?? 0;
-
-      final calorieBalance = consumed - burned;
-      if (calorieBalance > 0) {
-        final stepsNeeded = (calorieBalance / 0.04).ceil();
-
-        if (_currentPace > 0 && _currentPace < _targetPace) {
-          final ratio = _currentPace / _targetPace;
-          setState(() {
-            _dynamicStepsGoal = (stepsNeeded / ratio).ceil();
-          });
-        } else if (_currentPace > _targetPace) {
-          final ratio = _targetPace / _currentPace;
-          setState(() {
-            _dynamicStepsGoal = (stepsNeeded * ratio).ceil();
-          });
-        } else {
-          setState(() {
-            _dynamicStepsGoal = stepsNeeded;
-          });
-        }
-      }
+    if (!_isRunning) {
+      await _loadCalorieTargets();
+      return;
     }
+
+    if (_elapsedTime <= 0 || _distance <= 0) {
+      await _loadCalorieTargets();
+      return;
+    }
+
+    final hours = _elapsedTime / (1000 * 60 * 60);
+    _currentPace = _distance > 0 ? (60 / (_distance / hours)) : 0;
+
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final consumed = await _dbService.getTotalCaloriesConsumedByDate(today);
+    final stepRecord = await _dbService.getStepRecordByDate(today);
+    final burned = stepRecord?.calories ?? 0;
+
+    final calorieBalance = consumed - burned;
+    final caloriesToBurn = calorieBalance > 0 ? calorieBalance.toDouble() : 0.0;
+
+    if (caloriesToBurn == 0) {
+      if (!mounted) return;
+      setState(() {
+        _caloriesToBurn = 0;
+        _dynamicStepsGoal = 0;
+      });
+      return;
+    }
+
+    final stepsNeeded = (caloriesToBurn / 0.04).ceil();
+    int adjustedGoal = stepsNeeded;
+
+    if (_currentPace > 0 && _currentPace < _targetPace) {
+      final ratio = _currentPace / _targetPace;
+      adjustedGoal = (stepsNeeded / ratio).ceil();
+    } else if (_currentPace > _targetPace) {
+      final ratio = _targetPace / _currentPace;
+      adjustedGoal = (stepsNeeded * ratio).ceil();
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _caloriesToBurn = caloriesToBurn;
+      _dynamicStepsGoal = adjustedGoal;
+    });
   }
 
   Future<void> _startWorkout() async {
@@ -140,6 +175,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     });
 
     _startTimer();
+    await _loadCalorieTargets();
   }
 
   Future<void> _stopWorkout() async {
@@ -169,6 +205,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       _isRunning = false;
       _activeSession = null;
     });
+
+    await _loadCalorieTargets();
   }
 
   Future<void> _updateActiveSession() async {
@@ -346,109 +384,131 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         title: const Text('Allenamento'),
         centerTitle: true,
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (!_isRunning) _buildActivitySelector(),
-              if (!_isRunning) const SizedBox(height: 20),
-              Container(
-                width: 250,
-                height: 250,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _isRunning ? Colors.green.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
-                  border: Border.all(
-                    color: _isRunning ? Colors.green : Colors.grey,
-                    width: 4,
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    _formatElapsedTime(),
-                    style: TextStyle(
-                      fontSize: 48,
-                      fontWeight: FontWeight.bold,
-                      color: _isRunning ? Colors.green : Colors.grey,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 40),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildStatCard('Passi', '$_steps', Icons.directions_walk),
-                  _buildStatCard('Distanza', '${_distance.toStringAsFixed(2)} km', Icons.route),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Card(
-                elevation: 2,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.speed, color: Colors.blue),
-                          const SizedBox(width: 8),
-                          Text(
-                            _getCurrentSpeed(),
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (!_isRunning) _buildActivitySelector(),
+                    if (!_isRunning) const SizedBox(height: 20),
+                    Container(
+                      width: 250,
+                      height: 250,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _isRunning ? Colors.green.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+                        border: Border.all(
+                          color: _isRunning ? Colors.green : Colors.grey,
+                          width: 4,
+                        ),
                       ),
-                      if (_isRunning && _dynamicStepsGoal > 0) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          'Passi rimanenti: $_dynamicStepsGoal',
+                      child: Center(
+                        child: Text(
+                          _formatElapsedTime(),
                           style: TextStyle(
-                            fontSize: 14,
-                            color: _currentPace < _targetPace ? Colors.green : Colors.orange,
+                            fontSize: 48,
+                            fontWeight: FontWeight.bold,
+                            color: _isRunning ? Colors.green : Colors.grey,
                           ),
                         ),
-                        Text(
-                          _currentPace < _targetPace 
-                            ? 'Ritmo superiore al target' 
-                            : 'Aumenta il ritmo',
-                          style: const TextStyle(fontSize: 12),
-                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildStatCard('Passi', '$_steps', Icons.directions_walk),
+                        _buildStatCard('Distanza', '${_distance.toStringAsFixed(2)} km', Icons.route),
                       ],
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 16),
+                    Card(
+                      elevation: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.speed, color: Colors.blue),
+                                const SizedBox(width: 8),
+                                Text(
+                                  _getCurrentSpeed(),
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              _caloriesToBurn > 0
+                                  ? 'Calorie da bruciare oggi: ${_caloriesToBurn.toStringAsFixed(0)} kcal'
+                                  : 'Obiettivo calorico giornaliero raggiunto',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: _caloriesToBurn > 0 ? Colors.orange[800] : Colors.green[700],
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            if (_dynamicStepsGoal > 0) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                'Passi rimanenti: $_dynamicStepsGoal',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: !_isRunning
+                                      ? Colors.blueGrey
+                                      : (_currentPace < _targetPace ? Colors.green : Colors.orange),
+                                ),
+                              ),
+                              if (_isRunning)
+                                Text(
+                                  _currentPace < _targetPace
+                                      ? 'Ritmo superiore al target'
+                                      : 'Aumenta il ritmo',
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                    SizedBox(
+                      width: 200,
+                      height: 200,
+                      child: FloatingActionButton(
+                        onPressed: _isRunning ? _stopWorkout : _startWorkout,
+                        backgroundColor: _isRunning ? Colors.red : Colors.green,
+                        child: Icon(
+                          _isRunning ? Icons.stop : Icons.play_arrow,
+                          size: 64,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      _isRunning ? 'Tocca per fermare' : 'Tocca per iniziare',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: 200,
-                height: 200,
-                child: FloatingActionButton(
-                  onPressed: _isRunning ? _stopWorkout : _startWorkout,
-                  backgroundColor: _isRunning ? Colors.red : Colors.green,
-                  child: Icon(
-                    _isRunning ? Icons.stop : Icons.play_arrow,
-                    size: 64,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                _isRunning ? 'Tocca per fermare' : 'Tocca per iniziare',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

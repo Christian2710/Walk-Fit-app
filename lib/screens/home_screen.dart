@@ -26,6 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _goalSteps = 10000;
   int _dynamicGoalSteps = 10000;
   double _caloriesConsumed = 0;
+  double _calorieGoal = 0;
   String _suggestedPace = '--:--';
 
   @override
@@ -40,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final goal = await _dbService.getDailyStepGoal();
     setState(() {
       _goalSteps = goal;
+      _dynamicGoalSteps = goal;
     });
   }
 
@@ -76,14 +78,16 @@ class _HomeScreenState extends State<HomeScreen> {
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     final consumed = await _dbService.getTotalCaloriesConsumedByDate(today);
     
+    if (!mounted) return;
     setState(() {
       _caloriesConsumed = consumed;
       final calorieBalance = consumed - _calories;
-      
+      _calorieGoal = calorieBalance > 0 ? calorieBalance : 0;
+
       if (calorieBalance > 0) {
         final stepsNeeded = (calorieBalance / 0.04).ceil();
         _dynamicGoalSteps = _steps + stepsNeeded;
-        
+
         final remainingDistance = stepsNeeded * 0.0008;
         final estimatedMinutes = stepsNeeded / 100;
         if (remainingDistance > 0) {
@@ -112,7 +116,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final progress = _steps / _dynamicGoalSteps;
+    final progress = _dynamicGoalSteps <= 0
+        ? 0.0
+        : _steps / _dynamicGoalSteps;
     final motivationMessage = _nutritionService.getMotivationalMessage(_steps);
     final healthTips = _nutritionService.getHealthTips(_steps);
 
@@ -127,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const NutritionScreen()),
-              );
+              ).then((_) => _loadTodayData());
             },
           ),
           IconButton(
@@ -136,7 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const WorkoutScreen()),
-              );
+              ).then((_) => _loadTodayData());
             },
           ),
           IconButton(
@@ -145,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const StatisticsScreen()),
-              );
+              ).then((_) => _loadTodayData());
             },
           ),
         ],
@@ -199,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'Obiettivo: $_dynamicGoalSteps passi',
+                              'Obiettivo passi: $_goalSteps',
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -210,6 +216,27 @@ class _HomeScreenState extends State<HomeScreen> {
                               onPressed: _showGoalDialog,
                             ),
                           ],
+                        ),
+                        if (_dynamicGoalSteps > _goalSteps) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            'Adattato a: $_dynamicGoalSteps passi',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 8),
+                        Text(
+                          _calorieGoal > 0
+                              ? 'Calorie da bruciare oggi: ${_calorieGoal.toStringAsFixed(0)} kcal'
+                              : 'Obiettivo calorico raggiunto',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: _calorieGoal > 0 ? Colors.orange[800] : Colors.green[700],
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                         if (_caloriesConsumed > _calories)
                           Column(
@@ -354,9 +381,14 @@ class _HomeScreenState extends State<HomeScreen> {
               final newGoal = int.tryParse(controller.text);
               if (newGoal != null && newGoal > 0) {
                 await _dbService.setDailyStepGoal(newGoal);
+                if (!mounted) return;
                 setState(() {
                   _goalSteps = newGoal;
+                  if (_calorieGoal <= 0) {
+                    _dynamicGoalSteps = newGoal;
+                  }
                 });
+                await _updateDynamicGoal();
                 if (context.mounted) Navigator.pop(context);
               }
             },

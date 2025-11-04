@@ -1,0 +1,1 @@
+ /Users/parri/Downloads/Walk&Fit/.dart_tool/flutter_build/39214bea45c5b2f5c25fe72ee34c10ca/native_assets.json: 

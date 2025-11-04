@@ -2,6 +2,12 @@
   "configVersion": 2,
   "packages": [
     {
+      "name": "ansicolor",
+      "rootUri": "file:///Users/parri/.pub-cache/hosted/pub.dev/ansicolor-2.0.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
       "name": "archive",
       "rootUri": "file:///Users/parri/.pub-cache/hosted/pub.dev/archive-4.0.7",
       "packageUri": "lib/",
@@ -62,6 +68,12 @@
       "languageVersion": "3.4"
     },
     {
+      "name": "csslib",
+      "rootUri": "file:///Users/parri/.pub-cache/hosted/pub.dev/csslib-1.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
       "name": "cupertino_icons",
       "rootUri": "file:///Users/parri/.pub-cache/hosted/pub.dev/cupertino_icons-1.0.8",
       "packageUri": "lib/",
@@ -99,15 +111,15 @@
     },
     {
       "name": "flutter",
-      "rootUri": "file:///opt/homebrew/Caskroom/flutter/3.32.2/flutter/packages/flutter",
+      "rootUri": "file:///Users/parri/development/flutter/packages/flutter",
       "packageUri": "lib/",
-      "languageVersion": "3.8"
+      "languageVersion": "3.7"
     },
     {
       "name": "flutter_driver",
-      "rootUri": "file:///opt/homebrew/Caskroom/flutter/3.32.2/flutter/packages/flutter_driver",
+      "rootUri": "file:///Users/parri/development/flutter/packages/flutter_driver",
       "packageUri": "lib/",
-      "languageVersion": "3.8"
+      "languageVersion": "3.7"
     },
     {
       "name": "flutter_launcher_icons",
@@ -122,22 +134,34 @@
       "languageVersion": "3.1"
     },
     {
-      "name": "flutter_test",
-      "rootUri": "file:///opt/homebrew/Caskroom/flutter/3.32.2/flutter/packages/flutter_test",
+      "name": "flutter_native_splash",
+      "rootUri": "file:///Users/parri/.pub-cache/hosted/pub.dev/flutter_native_splash-2.4.7",
       "packageUri": "lib/",
-      "languageVersion": "3.8"
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "flutter_test",
+      "rootUri": "file:///Users/parri/development/flutter/packages/flutter_test",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
     },
     {
       "name": "flutter_web_plugins",
-      "rootUri": "file:///opt/homebrew/Caskroom/flutter/3.32.2/flutter/packages/flutter_web_plugins",
+      "rootUri": "file:///Users/parri/development/flutter/packages/flutter_web_plugins",
       "packageUri": "lib/",
-      "languageVersion": "3.8"
+      "languageVersion": "3.7"
     },
     {
       "name": "fuchsia_remote_debug_protocol",
-      "rootUri": "file:///opt/homebrew/Caskroom/flutter/3.32.2/flutter/packages/fuchsia_remote_debug_protocol",
+      "rootUri": "file:///Users/parri/development/flutter/packages/fuchsia_remote_debug_protocol",
       "packageUri": "lib/",
-      "languageVersion": "3.8"
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "html",
+      "rootUri": "file:///Users/parri/.pub-cache/hosted/pub.dev/html-0.15.6",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
     },
     {
       "name": "http",
@@ -159,9 +183,9 @@
     },
     {
       "name": "integration_test",
-      "rootUri": "file:///opt/homebrew/Caskroom/flutter/3.32.2/flutter/packages/integration_test",
+      "rootUri": "file:///Users/parri/development/flutter/packages/integration_test",
       "packageUri": "lib/",
-      "languageVersion": "3.8"
+      "languageVersion": "3.7"
     },
     {
       "name": "intl",
@@ -177,19 +201,19 @@
     },
     {
       "name": "leak_tracker",
-      "rootUri": "file:///Users/parri/.pub-cache/hosted/pub.dev/leak_tracker-11.0.2",
+      "rootUri": "file:///Users/parri/.pub-cache/hosted/pub.dev/leak_tracker-10.0.9",
       "packageUri": "lib/",
       "languageVersion": "3.2"
     },
     {
       "name": "leak_tracker_flutter_testing",
-      "rootUri": "file:///Users/parri/.pub-cache/hosted/pub.dev/leak_tracker_flutter_testing-3.0.10",
+      "rootUri": "file:///Users/parri/.pub-cache/hosted/pub.dev/leak_tracker_flutter_testing-3.0.9",
       "packageUri": "lib/",
       "languageVersion": "3.2"
     },
     {
       "name": "leak_tracker_testing",
-      "rootUri": "file:///Users/parri/.pub-cache/hosted/pub.dev/leak_tracker_testing-3.0.2",
+      "rootUri": "file:///Users/parri/.pub-cache/hosted/pub.dev/leak_tracker_testing-3.0.1",
       "packageUri": "lib/",
       "languageVersion": "3.2"
     },
@@ -375,9 +399,9 @@
     },
     {
       "name": "sky_engine",
-      "rootUri": "file:///opt/homebrew/Caskroom/flutter/3.32.2/flutter/bin/cache/pkg/sky_engine",
+      "rootUri": "file:///Users/parri/development/flutter/bin/cache/pkg/sky_engine",
       "packageUri": "lib/",
-      "languageVersion": "3.8"
+      "languageVersion": "3.7"
     },
     {
       "name": "source_span",
@@ -453,7 +477,7 @@
     },
     {
       "name": "test_api",
-      "rootUri": "file:///Users/parri/.pub-cache/hosted/pub.dev/test_api-0.7.6",
+      "rootUri": "file:///Users/parri/.pub-cache/hosted/pub.dev/test_api-0.7.4",
       "packageUri": "lib/",
       "languageVersion": "3.5"
     },
@@ -464,10 +488,16 @@
       "languageVersion": "3.5"
     },
     {
-      "name": "vector_math",
-      "rootUri": "file:///Users/parri/.pub-cache/hosted/pub.dev/vector_math-2.2.0",
+      "name": "universal_io",
+      "rootUri": "file:///Users/parri/.pub-cache/hosted/pub.dev/universal_io-2.2.2",
       "packageUri": "lib/",
-      "languageVersion": "3.1"
+      "languageVersion": "2.17"
+    },
+    {
+      "name": "vector_math",
+      "rootUri": "file:///Users/parri/.pub-cache/hosted/pub.dev/vector_math-2.1.4",
+      "packageUri": "lib/",
+      "languageVersion": "2.14"
     },
     {
       "name": "vm_service",
@@ -513,8 +543,8 @@
     }
   ],
   "generator": "pub",
-  "generatorVersion": "3.9.2",
-  "flutterRoot": "file:///opt/homebrew/Caskroom/flutter/3.32.2/flutter",
-  "flutterVersion": "3.35.7",
+  "generatorVersion": "3.8.1",
+  "flutterRoot": "file:///Users/parri/development/flutter",
+  "flutterVersion": "3.32.2",
   "pubCache": "file:///Users/parri/.pub-cache"
 }
