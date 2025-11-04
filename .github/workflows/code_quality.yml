@@ -1,0 +1,102 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    - cron: '0 0 * * 0'
+
+jobs:
+  quality-check:
+    name: Verifica Qualità Codice
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Installa dipendenze
+        run: flutter pub get
+
+      - name: Analisi statica approfondita
+        run: flutter analyze --fatal-infos
+
+      - name: Verifica formattazione
+        run: flutter format --set-exit-if-changed .
+
+      - name: Controlla dipendenze obsolete
+        run: flutter pub outdated
+
+      - name: Genera metriche codice
+        run: |
+          echo "### 📊 Metriche Codice" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**File Dart:**" >> $GITHUB_STEP_SUMMARY
+          find lib -name "*.dart" | wc -l >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Linee di codice:**" >> $GITHUB_STEP_SUMMARY
+          find lib -name "*.dart" -exec wc -l {} + | tail -1 >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**File di test:**" >> $GITHUB_STEP_SUMMARY
+          find test -name "*.dart" | wc -l >> $GITHUB_STEP_SUMMARY
+
+  security-check:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Controlla segreti hardcoded
+        run: |
+          if grep -r "YOUR_API.*_HERE" lib/ --exclude-dir=.git; then
+            echo "⚠️ Trovate API key placeholder"
+          else
+            echo "✅ Nessuna API key placeholder trovata"
+          fi
+
+      - name: Controlla file sensibili
+        run: |
+          if [ -f "lib/secrets.dart" ]; then
+            echo "❌ File secrets.dart non dovrebbe essere committato!"
+            exit 1
+          else
+            echo "✅ Nessun file sensibile trovato"
+          fi
+
+  dependency-check:
+    name: Controlla Dipendenze
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+
+      - name: Controlla vulnerabilità
+        run: |
+          flutter pub get
+          flutter pub outdated
+
+      - name: Genera report dipendenze
+        run: |
+          echo "### 📦 Dipendenze" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          flutter pub deps >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
