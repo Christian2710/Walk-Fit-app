@@ -21,7 +21,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final _dbService = DatabaseService.instance;
 
   int _steps = 0;
-  String _status = 'Inizializzazione...';
   double _calories = 0;
   double _distance = 0;
   int _goalSteps = 10000;
@@ -57,9 +56,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     _pedometerService.statusStream.listen((status) {
-      setState(() {
-        _status = status;
-      });
     });
   }
 

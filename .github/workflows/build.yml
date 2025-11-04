@@ -32,6 +32,9 @@ jobs:
       - name: Installa dipendenze
         run: flutter pub get
 
+      - name: Analisi codice
+        run: flutter analyze --no-fatal-infos
+      
       - name: Esegui test prima del build
         run: flutter test
 

@@ -28,7 +28,6 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   String _activityType = 'walk';
   double _targetPace = 6.0;
   int _dynamicStepsGoal = 0;
-  int _lastCheckSteps = 0;
   double _currentPace = 0;
 
   @override
@@ -81,8 +80,6 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
   void _adjustDynamicGoal() async {
     if (!_isRunning || _distance == 0) return;
-
-    _lastCheckSteps = _steps;
 
     if (_elapsedTime > 0) {
       final hours = _elapsedTime / (1000 * 60 * 60);
